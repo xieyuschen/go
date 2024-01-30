@@ -18,7 +18,9 @@ import (
 // type. context describes the context in which the assignment takes place.
 // Use T == nil to indicate assignment to an untyped blank identifier.
 // If the assignment check fails, x.mode is set to invalid.
-func (check *Checker) assignment(x *operand, T Type, context string) {
+//
+// todo: make hasDot a new argument instead of a variadic list
+func (check *Checker) assignment(x *operand, T Type, context string, hasDot ...bool) {
 	check.singleValue(x)
 
 	switch x.mode {
@@ -91,7 +93,7 @@ func (check *Checker) assignment(x *operand, T Type, context string) {
 	}
 
 	cause := ""
-	if ok, code := x.assignableTo(check, T, &cause); !ok {
+	if ok, code := x.assignableTo(check, T, &cause, hasDot...); !ok {
 		if cause != "" {
 			check.errorf(x, code, "cannot use %s as %s value in %s: %s", x, T, context, cause)
 		} else {

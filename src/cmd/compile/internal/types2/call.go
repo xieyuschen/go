@@ -478,7 +478,7 @@ func (check *Checker) arguments(call *syntax.CallExpr, sig *Signature, targs []T
 			// variadic_func(a, b, c...)
 			if len(call.ArgList) == 1 && nargs > 1 {
 				// f()... is not permitted if f() is multi-valued
-				//check.errorf(call.Ellipsis, "cannot use ... with %d-valued %s", nargs, call.ArgList[0])
+				// check.errorf(call.Ellipsis, "cannot use ... with %d-valued %s", nargs, call.ArgList[0])
 				check.errorf(call, InvalidDotDotDot, "cannot use ... with %d-valued %s", nargs, call.ArgList[0])
 				return
 			}
@@ -506,7 +506,7 @@ func (check *Checker) arguments(call *syntax.CallExpr, sig *Signature, targs []T
 	} else {
 		if ddd {
 			// standard_func(a, b, c...)
-			//check.errorf(call.Ellipsis, "cannot use ... in call to non-variadic %s", call.Fun)
+			// check.errorf(call.Ellipsis, "cannot use ... in call to non-variadic %s", call.Fun)
 			check.errorf(call, NonVariadicDotDotDot, "cannot use ... in call to non-variadic %s", call.Fun)
 			return
 		}
@@ -649,7 +649,7 @@ func (check *Checker) arguments(call *syntax.CallExpr, sig *Signature, targs []T
 	if len(args) > 0 {
 		context := check.sprintf("argument to %s", call.Fun)
 		for i, a := range args {
-			check.assignment(a, sigParams.vars[i].typ, context)
+			check.assignment(a, sigParams.vars[i].typ, context, ddd)
 		}
 	}
 

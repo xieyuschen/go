@@ -244,7 +244,7 @@ func (x *operand) isNil() bool { return x.mode == nilvalue }
 // is only valid if the (first) result is false. The check parameter may be nil
 // if assignableTo is invoked through an exported API call, i.e., when all
 // methods have been type-checked.
-func (x *operand) assignableTo(check *Checker, T Type, cause *string) (bool, Code) {
+func (x *operand) assignableTo(check *Checker, T Type, cause *string, hasDot ...bool) (bool, Code) {
 	if x.mode == invalid || !isValid(T) {
 		return true, 0 // avoid spurious errors
 	}
@@ -288,6 +288,32 @@ func (x *operand) assignableTo(check *Checker, T Type, cause *string) (bool, Cod
 	// and neither V nor T is a type parameter.
 	if Identical(Vu, Tu) && (!hasName(V) || !hasName(T)) && Vp == nil && Tp == nil {
 		return true, 0
+	}
+
+	if len(hasDot) != 0 && hasDot[0] {
+		vSlice, ok := V.(*Slice)
+		tSlice, ok1 := T.(*Slice)
+		if !(ok && ok1) {
+			*cause = "invalid argument in the variadic argument"
+			return false, IncompatibleAssign
+		}
+
+		eTu := under(tSlice.elem)
+		eTp, _ := tSlice.elem.(*TypeParam)
+		if _, ok := eTu.(*Interface); ok && eTp == nil || isInterfacePtr(eTu) {
+			if check.implements(x.Pos(), vSlice.elem, tSlice.elem, false, cause) {
+				return true, 0
+			}
+			eVp, _ := vSlice.elem.(*TypeParam)
+			// V doesn't implement T but V may still be assignable to T if V
+			// is a type parameter; do not report an error in that case yet.
+			if eVp == nil {
+				return false, InvalidIfaceAssign
+			}
+			if cause != nil {
+				*cause = ""
+			}
+		}
 	}
 
 	// T is an interface type, but not a type parameter, and V implements T.
