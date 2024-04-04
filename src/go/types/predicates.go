@@ -488,8 +488,20 @@ func (c *comparer) identical(x, y Type, p *ifacePair) bool {
 
 // identicalOrigin reports whether x and y originated in the same declaration.
 func identicalOrigin(x, y *Named) bool {
-	// TODO(gri) is this correct?
-	return x.Origin().obj == y.Origin().obj
+	// this could cover the must cases
+	if x.Origin().obj == y.Origin().obj {
+		return true
+	}
+
+	// for review(xieyuschen): i'm not sure whether the obj will be nil in some cases,
+	// so check the nil pointer before de-reference
+	if x.Origin().obj == nil || y.Origin().obj == nil {
+		return false
+	}
+
+	// in the case that the same type is loaded multiple times by the Go tools such as packages,
+	// the types doesn't share the same pointer
+	return *x.Origin().obj == *y.Origin().obj
 }
 
 // identicalInstance reports if two type instantiations are identical.
