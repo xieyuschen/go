@@ -67,7 +67,12 @@ type parser struct {
 
 func (p *parser) init(file *token.File, src []byte, mode Mode) {
 	p.file = file
-	eh := func(pos token.Position, msg string) { p.errors.Add(pos, msg) }
+	eh := func(pos token.Position, msg string) {
+		p.error(p.file.Pos(pos.Offset), msg)
+	}
+	// eh := func(pos token.Position, msg string) {
+	// 	p.errors.Add(pos, msg)
+	// }
 	p.scanner.Init(p.file, src, eh, scanner.ScanComments)
 
 	p.top = true

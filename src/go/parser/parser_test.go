@@ -89,6 +89,32 @@ func TestIssue42951(t *testing.T) {
 	}
 }
 
+func TestIssue70726(t *testing.T) {
+	const src = `package test
+func parseError() { var a }
+func parseError() { var a }
+func parseError() { var a }
+func parseError() { var a }
+func parseError() { var a }
+func parseError() { var a }
+func parseError() { var a }
+func parseError() { var a }
+func parseError() { var a }
+func parseError() { var a }
+func parseError() { var a }
+@ // parser should failed here and reach the 10-error limit`
+
+	f, err := ParseFile(token.NewFileSet(), "", src, 0)
+	if err == nil {
+		t.Error("ParseFile has no error, should have")
+	}
+
+	// the '@' shouldn't be constructed as a decl
+	if len(f.Decls) != 11 {
+		t.Errorf("parsed file has %d decl, want 11 delcs", len(f.Decls))
+	}
+}
+
 func TestParseExpr(t *testing.T) {
 	// just kicking the tires:
 	// a valid arithmetic expression
